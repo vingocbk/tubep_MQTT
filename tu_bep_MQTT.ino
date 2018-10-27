@@ -32,6 +32,7 @@ void setupLedbegin(){
 }
 void SetupNetwork() {
     //ket noi vao mang wifi 
+    WiFi.mode(WIFI_STA);
     ECHO("Ket noi mang wifi: ");
     ECHOLN(WIFI_SSID);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -67,41 +68,58 @@ void setPulMotor(){
 }
 
 void ControlLed(){
-    StaticJsonBuffer<RESPONSE_LENGTH> jsonBuffer;
-    JsonObject& rootData = jsonBuffer.parseObject(datareceive);
-    ECHOLN("--------------");
-    
-    if (rootData.success()) {
-        String powerStr = rootData["power"];
-        String redStr = rootData["red"];
-        String greenStr = rootData["green"];
-        String blueStr = rootData["blue"];
-        float out_led_red, out_led_green, out_led_blue;
+    // StaticJsonBuffer<RESPONSE_LENGTH> jsonBuffer;
+    // JsonObject& rootData = jsonBuffer.parseObject(datareceive);
+    // ECHOLN("--------------");
+    float out_led_red, out_led_green, out_led_blue;
+    String redStr = "";
+    String greenStr = "";
+    String blueStr = "";
+    if(datareceive == "off"){
+        for(int i = 1; i<=255; i++){
+            out_led_red = (float)red_before + (((float)0 - (float)red_before)/255)*i;
+            out_led_red = abs(out_led_red);
+            analogWrite(PIN_LED_RED, uint8_t(out_led_red));
+            out_led_green = (float)green_before + (((float)0 - (float)green_before)/255)*i;
+            out_led_green = abs(out_led_green);
+            analogWrite(PIN_LED_GREEN, uint8_t(out_led_green));
+            out_led_blue = (float)blue_before + (((float)0 - (float)blue_before)/255)*i;
+            out_led_blue = abs(out_led_blue);
+            analogWrite(PIN_LED_BLUE, uint8_t(out_led_blue));
+            delay(10);
+            
+        }
+        red_before = 0;
+        green_before = 0;
+        blue_before = 0;                
+        return;
+    }
 
-        red_after = atoi(redStr.c_str());
-        green_after = atoi(greenStr.c_str());
-        blue_after = atoi(blueStr.c_str());
+    if(datareceive == "on"){
+        digitalWrite(PIN_ENCODER_MOTOR, HIGH);
+        delay(500);
+        digitalWrite(PIN_ENCODER_MOTOR, LOW);
+        setupLedbegin();             
+        return;
+    }
 
-        if(powerStr == "off"){
-            for(int i = 1; i<=255; i++){
-                out_led_red = (float)red_before + (((float)0 - (float)red_before)/255)*i;
-                out_led_red = abs(out_led_red);
-                analogWrite(PIN_LED_RED, uint8_t(out_led_red));
-                out_led_green = (float)green_before + (((float)0 - (float)green_before)/255)*i;
-                out_led_green = abs(out_led_green);
-                analogWrite(PIN_LED_GREEN, uint8_t(out_led_green));
-                out_led_blue = (float)blue_before + (((float)0 - (float)blue_before)/255)*i;
-                out_led_blue = abs(out_led_blue);
-                analogWrite(PIN_LED_BLUE, uint8_t(out_led_blue));
-                delay(10);
-                
-            }
-            red_before = 0;
-            green_before = 0;
-            blue_before = 0;                
-            return;
-        }        
-        
+    if(datareceive[0] != 'o'){
+        redStr = "";
+        for(int i = 0; i<= 2; i++){
+            redStr += datareceive[i];
+        }
+        red_after = redStr.toInt();
+        greenStr = "";
+        for(int i = 3; i<= 5; i++){
+            greenStr += datareceive[i];
+        }
+        green_after = greenStr.toInt();
+        blueStr = "";
+        for(int i = 6; i<= 8; i++){
+            blueStr += datareceive[i];
+        }
+        blue_after = blueStr.toInt();
+
         for(int i = 1; i<=255; i++){
             out_led_red = (float)red_before + (((float)red_after - (float)red_before)/255)*i;
             out_led_red = abs(out_led_red);
@@ -114,11 +132,10 @@ void ControlLed(){
             analogWrite(PIN_LED_BLUE, uint8_t(out_led_blue));
             delay(10);
         }
-
         red_before = red_after;
         green_before = green_after;
         blue_before = blue_after;
-        
+
         ECHO("RED: ");
         ECHOLN(uint8_t(out_led_red));
         ECHO("GREEN: ");
@@ -153,8 +170,96 @@ void ControlLed(){
         EEPROM.commit();
         ECHOLN("Done writing!");
         return;
+    
+
+
+
+
+    // if (rootData.success()) {
+    //     String powerStr = rootData["power"];
+    //     String redStr = rootData["red"];
+    //     String greenStr = rootData["green"];
+    //     String blueStr = rootData["blue"];
+    //     float out_led_red, out_led_green, out_led_blue;
+
+    //     red_after = atoi(redStr.c_str());
+    //     green_after = atoi(greenStr.c_str());
+    //     blue_after = atoi(blueStr.c_str());
+
+    //     if(powerStr == "off"){
+    //         for(int i = 1; i<=255; i++){
+    //             out_led_red = (float)red_before + (((float)0 - (float)red_before)/255)*i;
+    //             out_led_red = abs(out_led_red);
+    //             analogWrite(PIN_LED_RED, uint8_t(out_led_red));
+    //             out_led_green = (float)green_before + (((float)0 - (float)green_before)/255)*i;
+    //             out_led_green = abs(out_led_green);
+    //             analogWrite(PIN_LED_GREEN, uint8_t(out_led_green));
+    //             out_led_blue = (float)blue_before + (((float)0 - (float)blue_before)/255)*i;
+    //             out_led_blue = abs(out_led_blue);
+    //             analogWrite(PIN_LED_BLUE, uint8_t(out_led_blue));
+    //             delay(10);
+                
+    //         }
+    //         red_before = 0;
+    //         green_before = 0;
+    //         blue_before = 0;                
+    //         return;
+    //     }        
+        
+    //     for(int i = 1; i<=255; i++){
+    //         out_led_red = (float)red_before + (((float)red_after - (float)red_before)/255)*i;
+    //         out_led_red = abs(out_led_red);
+    //         analogWrite(PIN_LED_RED, uint8_t(out_led_red));
+    //         out_led_green = (float)green_before + (((float)green_after - (float)green_before)/255)*i;
+    //         out_led_green = abs(out_led_green);
+    //         analogWrite(PIN_LED_GREEN, uint8_t(out_led_green));
+    //         out_led_blue = (float)blue_before + (((float)blue_after - (float)blue_before)/255)*i;
+    //         out_led_blue = abs(out_led_blue);
+    //         analogWrite(PIN_LED_BLUE, uint8_t(out_led_blue));
+    //         delay(10);
+    //     }
+
+    //     red_before = red_after;
+    //     green_before = green_after;
+    //     blue_before = blue_after;
+        
+    //     ECHO("RED: ");
+    //     ECHOLN(uint8_t(out_led_red));
+    //     ECHO("GREEN: ");
+    //     ECHOLN(uint8_t(out_led_green));
+    //     ECHO("BLUE: ");
+    //     ECHOLN(uint8_t(out_led_blue));
+    //     //clear data EEPROM Led RGB
+    //     for (int i = EEPROM_WIFI_LED_RED_START; i <= EEPROM_WIFI_LED_BLUE_END; ++i){
+    //         EEPROM.write(i, 0);
+    //     }
+    //     ECHOLN("writing eeprom LED RED:");
+    //     ECHO("Wrote: ");
+    //     for (int i = 0; i < redStr.length(); ++i){
+    //         EEPROM.write(i+EEPROM_WIFI_LED_RED_START, redStr[i]);
+    //         ECHO(redStr[i]);
+    //     }
+    //     ECHOLN("");
+    //     ECHOLN("writing eeprom LED GREEN:");
+    //     ECHO("Wrote: ");
+    //     for (int i = 0; i < greenStr.length(); ++i){
+    //         EEPROM.write(i+EEPROM_WIFI_LED_GREEN_START, greenStr[i]);
+    //         ECHO(greenStr[i]);
+    //     }
+    //     ECHOLN("");
+    //     ECHOLN("writing eeprom LED BLUE:"); 
+    //     ECHO("Wrote: ");
+    //     for (int i = 0; i < blueStr.length(); ++i){
+    //         EEPROM.write(i+EEPROM_WIFI_LED_BLUE_START, blueStr[i]);             
+    //         ECHO(blueStr[i]);
+    //     }
+    //     ECHOLN("");
+    //     EEPROM.commit();
+    //     ECHOLN("Done writing!");
+    //     return;
+    // }
+    // ECHOLN("Wrong data!!!"); 
     }
-    ECHOLN("Wrong data!!!"); 
 }
 
 
@@ -164,17 +269,20 @@ void setup() {
     pinMode(PIN_CONFIG, INPUT);
     pinMode(PIN_PUL_MOTOR, OUTPUT);
     pinMode(PIN_DIR_MOTOR, OUTPUT);
-    pinMode(PIN_ENCODER_MOTOR, INPUT_PULLUP);
+    //pinMode(PIN_ENCODER_MOTOR, INPUT_PULLUP);
+    pinMode(PIN_ENCODER_MOTOR, OUTPUT);
+    digitalWrite(PIN_ENCODER_MOTOR, LOW);
+
     analogWriteRange(255);      //max gia tri PWM la 255
     Serial.begin(115200);
     EEPROM.begin(512);
     //external interrupt doc tin hieu encoder
     //attachInterrupt(digitalPinToInterrupt(PIN_ENCODER_MOTOR), handleInterruptMotor, CHANGE);
     setupLedbegin();
-    SetupNetwork();  
+    SetupNetwork();
     client.setServer(MQTT_SERVER, MQTT_PORT);   //thiet lap Broker server 
     client.setCallback(mqtt_callback);      //dang ky ham callback
-  
+    Serial.println(MQTT_client);
 }
 
 void loop() {
@@ -218,7 +326,7 @@ void reconnect() {
     // Loop until we're reconnected
     while (!client.connected()) {
     //goi ham connect() de ket noi toi Broker server da thiet lap
-        if (client.connect("ESP8266Client")) {
+        if (client.connect(MQTT_client)) {
             ECHOLN("connected");
         } else {
             ECHO("failed, rc=");
@@ -228,9 +336,9 @@ void reconnect() {
             delay(5000);
         }
     }
-    
-    client.subscribe(COMMAND_1); 
-    client.subscribe(COMMAND_2); 
+   
+    client.subscribe(COMMAND_1);
+    client.subscribe(COMMAND_2);
 }
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
@@ -240,13 +348,13 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
         for (int i = 0; i < length; i++) {
             datareceive += (char)payload[i];            
         }
-        ECHOLN(datareceive);
-        if(datareceive == "UP"){
+        ECHO(datareceive);
+        if(datareceive == "open"){
             flagModeMotor = 1;
         }else if(datareceive == "DOWN"){
             flagModeMotor = 2;
         }
-        else if(datareceive == "STOP"){
+        else if(datareceive == "close"){
             flagModeMotor = 3;
         }
         //client.publish(COMMAND_2, "done", true);
