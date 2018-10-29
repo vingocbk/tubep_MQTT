@@ -49,18 +49,24 @@ void SetupNetwork() {
 void goUpMotor(){
     ECHOLN("UP");
     digitalWrite(PIN_DIR_MOTOR, HIGH);
-    tickerSetMotor.start();
+    digitalWrite(PIN_ENCODER_MOTOR, HIGH);
+    delay(500);
+    digitalWrite(PIN_ENCODER_MOTOR, LOW);
+    //tickerSetMotor.start();
 }
 
 void goDownMotor(){
     ECHOLN("DOWN");
     digitalWrite(PIN_DIR_MOTOR, LOW);
-    tickerSetMotor.start();
+    //tickerSetMotor.start();
 }
 
 void stopMotor(){
     ECHOLN("STOP");
-    tickerSetMotor.stop();
+    digitalWrite(PIN_ENCODER_MOTOR, HIGH);
+    delay(500);
+    digitalWrite(PIN_ENCODER_MOTOR, LOW);
+    //tickerSetMotor.stop();
 }
 
 void setPulMotor(){
@@ -96,11 +102,11 @@ void ControlLed(){
     }
 
     if(datareceive == "on"){
-        digitalWrite(PIN_ENCODER_MOTOR, HIGH);
-        delay(500);
-        digitalWrite(PIN_ENCODER_MOTOR, LOW);
-        setupLedbegin();             
-        return;
+//        digitalWrite(PIN_ENCODER_MOTOR, HIGH);
+//        delay(500);
+//        digitalWrite(PIN_ENCODER_MOTOR, LOW);
+    setupLedbegin();             
+    return;
     }
 
     if(datareceive[0] != 'o'){

@@ -19,7 +19,7 @@ PubSubClient client(espClient);
 
 #define MQTT_PORT   1883
 
-#define MQTT_client "ESP8266Client6"
+#define MQTT_client "ESP8266Client2"
 
 #define COMMAND_1   "drawer2"
 #define COMMAND_2   "rgb"
